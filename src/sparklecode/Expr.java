@@ -2,11 +2,27 @@ package sparklecode;
 
 abstract class Expr {
   public interface Visitor<R> {
+    public R visitAssignExpr(Assign expr);
     public R visitBinaryExpr(Binary expr);
     public R visitGroupingExpr(Grouping expr);
     public R visitLiteralExpr(Literal expr);
     public R visitUnaryExpr(Unary expr);
     public R visitVariableExpr(Variable expr);
+  }
+
+  static public class Assign extends Expr{
+    Assign(Token name, Expr value) {
+      this.name = name;
+      this.value = value;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitAssignExpr(this);
+    }
+
+    final Token name;
+    final Expr value;
   }
 
   static public class Binary extends Expr{

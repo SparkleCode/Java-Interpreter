@@ -20,10 +20,13 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
   }
   String print(List<Stmt> statements) {
     StringBuilder builder = new StringBuilder();
-    statements.forEach((stmt) -> {
+    
+    int idx = -1;
+    for(Stmt stmt : statements){
+      idx++;
       builder.append(stmt.accept(this));
-      builder.append("\n");
-    });
+      if(idx>=statements.size()) builder.append("\n");
+    }
     return builder.toString();
   }
   
@@ -34,6 +37,31 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     for (Expr expr : exprs) {
       builder.append(" ");
       builder.append(expr.accept(this));
+    }
+    builder.append(")");
+
+    return builder.toString();
+  }
+  
+  private String parenthesize2(String name, Object... parts) {
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("(").append(name);
+
+    for (Object part : parts) {
+      builder.append(" ");
+
+      if (part instanceof Expr) {
+        builder.append(((Expr)part).accept(this));
+//> Statements and State omit
+      } else if (part instanceof Stmt) {
+        builder.append(((Stmt) part).accept(this));
+//< Statements and State omit
+      } else if (part instanceof Token) {
+        builder.append(((Token) part).lexeme);
+      } else {
+        builder.append(part);
+      }
     }
     builder.append(")");
 
@@ -73,11 +101,20 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
   @Override
   public String visitVariableExpr(Expr.Variable expr) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return expr.name.lexeme;
   }
 
   @Override
   public String visitVarStmt(Stmt.Var stmt) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    if (stmt.initializer == null) {
+      return parenthesize2("var", stmt.name.lexeme);
+    }
+
+    return parenthesize2("var", stmt.name, "=", stmt.initializer);
+  }
+
+  @Override
+  public String visitAssignExpr(Expr.Assign expr) {
+    return parenthesize2("=", expr.name.lexeme, expr.value);
   }
 }

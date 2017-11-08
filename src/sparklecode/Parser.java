@@ -25,10 +25,36 @@ public class Parser {
   List<Stmt> parse() {
     List<Stmt> statments = new ArrayList<>();
     while(!isAtEnd()){
-      statments.add(statement());
+      Stmt d = declaration();
+      if(d != null) {
+        statments.add(d);
+      }
     }
     
     return statments;
+  }
+  
+  private Stmt declaration() {
+    try {
+      if(match(VAR)) return varDeclaration();
+      
+      return statement();
+    } catch(ParseError e) {
+      synchronize();
+      return null;
+    }
+  }
+  
+  private Stmt varDeclaration() {
+    Token name = consume(IDENTIFIER, "Expected variable name. ");
+    
+    Expr initialiser = null;
+    if(match(EQUAL)) {
+      initialiser = expression();
+    }
+    
+    consume(SEMICOLON, "Expect ';' after variable declaration.");
+    return new Stmt.Var(name, initialiser);
   }
   
   private Stmt statement() {
@@ -50,9 +76,27 @@ public class Parser {
   }
   
   private Expr expression() {
-    return equality();
+    return assignment();
   }
 
+  private Expr assignment() {
+    Expr expr = equality();
+
+    if (match(EQUAL)) {
+      Token equals = previous();
+      Expr value = assignment();
+
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable)expr).name;
+        return new Expr.Assign(name, value);
+      }
+
+      throw error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
+  
   private Expr equality() {
     Expr expr = comparison();
     
@@ -126,6 +170,10 @@ public class Parser {
       return new Expr.Grouping(expr);
     }
     
+    if (match(IDENTIFIER)) {
+      return new Expr.Variable(previous());
+    }
+    
     throw error(peek(), "Expect expression.");
   }
   
@@ -173,6 +221,7 @@ public class Parser {
   }
   
   private boolean check(TokenType tokenType) {
+    if (isAtEnd() && tokenType == SEMICOLON) return true;
     if (isAtEnd()) return false;
     return peek().type == tokenType;
   }

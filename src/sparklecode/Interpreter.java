@@ -12,6 +12,8 @@ import java.util.List;
  * @author Will
  */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+  private final Environment env = new Environment();
+  
   void interpret(List<Stmt> statements) {
     try {
       statements.forEach((stmt) -> {
@@ -105,7 +107,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Void visitPrintStmt(Stmt.Print stmt) {
     Object value = evaluate(stmt.expression);
-    System.out.println(value);
+    System.out.println(stringify(value));
     return null;
   }
   
@@ -166,11 +168,25 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return env.get(expr.name);
   }
 
   @Override
   public Void visitVarStmt(Stmt.Var stmt) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    Object value = null;
+    if (stmt.initializer != null) {
+      value = evaluate(stmt.initializer);
+    }
+
+    env.define(stmt.name.lexeme, value);
+    return null;
+  }
+
+  @Override
+  public Object visitAssignExpr(Expr.Assign expr) {
+    Object value = evaluate(expr.value);
+
+    env.assign(expr.name, value);
+    return value;
   }
 }
