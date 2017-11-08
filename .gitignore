@@ -24,5 +24,3 @@ hs_err_pid*
 # netbeans
 nbproject/private/
 build/
-test/
-lib/
