@@ -71,7 +71,7 @@ let x = fn(hello = "world") {  //assign x to un-named lambda, set default value 
   print("hello, ${hello}");
 };
 
-let x = fn loop(n) { //assign x to named lambda, for recursion, name not accessable outside function
+let x = fn loop(n) { //assign x to named lambda, for recursion, name not accessible outside function
   if n > 1 then {
     loop(n - 1);
   }
@@ -124,7 +124,7 @@ repeat(5,2,-1) { |i|
   //5,4,3,2
 }
 
-@infix(2) // precidence 2
+@infix(2) // precedence 2
 fn add(a, b) { 
   return a + b;
 }
@@ -144,26 +144,28 @@ fn ife(a,|?|,b,|:|,c){
 
 let const x = 5; // read only
 
-// all types inherit from object
-type x {
+// all classes inherit from object
+class x {
   let x = 5;  // private by default
-  let private x = 5; // only accessable from inside type
-  let public x = 5;  // accessable outside and inside type
-  let protected x = 5; // accessable inside and by extended type
+  let private x = 5; // only accessible from inside type
+  let public x = 5;  // accessible outside and inside type
+  let protected x = 5; // accessible inside and by extended type
   let private const x = 5;
   let public const x = 5;
   let protected const x = 5;
-  impl iterable { //type x implements iterable trait, block after function call is passed as last arg
-    fn next(self, super) { ... }
-  };
   constructor(self,super) { // run when type created
 
   }
   fn x(self, super) { ... } // not in any trait
 }
+
+impl iterable for x { //class x implements iterable trait
+  fn next(self, super) { ... }
+};
+
 type y extends x {
   constructor(self,super) { // running super initialises x
-    // self and super are always passed as first two aruments to function inside type
+    // self and super are always passed as first two arguments to function inside type
     
   }
 }

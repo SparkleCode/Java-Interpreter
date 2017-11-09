@@ -1,10 +1,26 @@
 package sparklecode;
 
+import java.util.List;
+
 abstract class Stmt {
   public interface Visitor<R> {
+    public R visitBlockStmt(Block stmt);
     public R visitExpressionStmt(Expression stmt);
     public R visitPrintStmt(Print stmt);
     public R visitVarStmt(Var stmt);
+  }
+
+  static public class Block extends Stmt{
+    Block(List<Stmt> statements) {
+      this.statements = statements;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitBlockStmt(this);
+    }
+
+    final List<Stmt> statements;
   }
 
   static public class Expression extends Stmt{

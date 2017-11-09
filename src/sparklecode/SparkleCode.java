@@ -21,6 +21,7 @@ public class SparkleCode {
   private static final Interpreter interp = new Interpreter();
   static boolean hadError = false;
   static boolean hadRuntimeError;
+  static boolean inRepl = false;
 
   /**
    * @param args the command line arguments
@@ -47,6 +48,8 @@ public class SparkleCode {
   private static void runPrompt() throws IOException {
     InputStreamReader input = new InputStreamReader(System.in);
     BufferedReader reader = new BufferedReader(input);
+    
+    inRepl = true;
     
     for(;;) {
       System.out.print("> ");

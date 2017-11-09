@@ -117,4 +117,17 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
   public String visitAssignExpr(Expr.Assign expr) {
     return parenthesize2("=", expr.name.lexeme, expr.value);
   }
+
+  @Override
+  public String visitBlockStmt(Stmt.Block stmt) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("(block ");
+
+    for (Stmt statement : stmt.statements) {
+      builder.append(statement.accept(this));
+    }
+
+    builder.append(")");
+    return builder.toString();
+  }
 }

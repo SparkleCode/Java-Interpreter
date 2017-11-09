@@ -1,5 +1,7 @@
 package sparklecode;
 
+import java.util.List;
+
 abstract class Expr {
   public interface Visitor<R> {
     public R visitAssignExpr(Assign expr);

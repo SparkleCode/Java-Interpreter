@@ -34,6 +34,7 @@ public class generateAst {
     ));
     
     defineAst(outputDir, "Stmt", Arrays.asList(
+      "Block      : List<Stmt> statements",
       "Expression : Expr expression",
       "Print      : Expr expression",
       "Var        : Token name, Expr initializer"
@@ -48,6 +49,8 @@ public class generateAst {
     writer = new PrintWriter(new FileOutputStream(path, false));
     
     writer.println("package sparklecode;");
+    writer.println();
+    writer.println("import java.util.List;");
     writer.println();
     writer.println("abstract class " + baseName + " {");
     

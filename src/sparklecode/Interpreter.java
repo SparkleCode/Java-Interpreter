@@ -12,13 +12,20 @@ import java.util.List;
  * @author Will
  */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-  private final Environment env = new Environment();
+  private Environment env = new Environment();
+  private boolean printExpr = false;
   
   void interpret(List<Stmt> statements) {
     try {
-      statements.forEach((stmt) -> {
+      printExpr = false;
+      int i = 0;
+      for(Stmt stmt : statements){
+        i++;
+        if(i >= statements.size()){
+          printExpr = true;
+        }
         excecute(stmt);
-      });
+      }
     } catch (RuntimeError error) {
       SparkleCode.runtimeError(error);
     }
@@ -100,7 +107,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   
   @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
-    evaluate(stmt.expression);
+    Object o = evaluate(stmt.expression);
+    if(printExpr) System.out.println(stringify(o));
     return null;
   }
 
@@ -178,7 +186,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       value = evaluate(stmt.initializer);
     }
 
-    env.define(stmt.name.lexeme, value);
+    env.define(stmt.name.lexeme, value, stmt.initializer != null);
     return null;
   }
 
@@ -188,5 +196,23 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     env.assign(expr.name, value);
     return value;
+  }
+  
+  @Override
+  public Void visitBlockStmt(Stmt.Block expr) {
+    excecuteBlock(expr.statements, new Environment(env));
+    return null;
+  }
+
+  private void excecuteBlock(List<Stmt> statements, Environment environment) {
+    Environment previous = this.env;
+    try {
+      this.env = environment;
+      statements.forEach((stmt) -> {
+        excecute(stmt);
+      });
+    } finally {
+      this.env = previous;
+    }
   }
 }
