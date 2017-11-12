@@ -1,3 +1,5 @@
+// test file for interpreter
+
 var a = 1;
 print a;
 {

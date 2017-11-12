@@ -1,8 +1,27 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The MIT License
+ *
+ * Copyright 2017 Will.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
+
 package sparklecode;
 
 import java.util.ArrayList;
@@ -10,7 +29,7 @@ import java.util.List;
 import static sparklecode.TokenType.*;
 
 /**
- *
+ * convert list of tokens into statement list
  * @author Will
  */
 public class Parser {
@@ -18,10 +37,18 @@ public class Parser {
   private final List<Token> tokens;
   private int current = 0;
   
+  /**
+   * Create new parser for list of tokens
+   * @param tokens list of tokens
+   */
   Parser(List<Token> tokens) {
     this.tokens = tokens;
   }
   
+  /**
+   * convert tokens to list of statements
+   * @return 
+   */
   List<Stmt> parse() {
     List<Stmt> statments = new ArrayList<>();
     while(!isAtEnd()){
@@ -34,6 +61,10 @@ public class Parser {
     return statments;
   }
   
+  /**
+   * parse a declaration
+   * @return statement
+   */
   private Stmt declaration() {
     try {
       if(match(VAR)) return varDeclaration();
@@ -45,6 +76,10 @@ public class Parser {
     }
   }
   
+  /**
+   * parse variable declaration (var x = 5; var x;)
+   * @return statement
+   */
   private Stmt varDeclaration() {
     Token name = consume(IDENTIFIER, "Expected variable name. ");
     
@@ -57,6 +92,10 @@ public class Parser {
     return new Stmt.Var(name, initialiser);
   }
   
+  /**
+   * parse non declaration statement
+   * @return statement
+   */
   private Stmt statement() {
     if(match(PRINT)) return printStatement();
     if(match(LEFT_BRACE)) return new Stmt.Block(block());
@@ -64,6 +103,10 @@ public class Parser {
     return expressionStatement();
   }
   
+  /**
+   * parse block statement
+   * @return statement
+   */
   private List<Stmt> block() {
     List<Stmt> statements = new ArrayList<>();
     
@@ -75,22 +118,38 @@ public class Parser {
     return statements;
   }
   
+  /**
+   * parse print statement
+   * @return statement
+   */
   private Stmt printStatement() {
     Expr value = expression();
     consume(SEMICOLON, "Expected ';' after value.");
     return new Stmt.Print(value);
   }
   
+  /**
+   * parse expression statement
+   * @return statement
+   */
   private Stmt expressionStatement() {
     Expr value = expression();
     consume(SEMICOLON, "Expected ';' after expression.");
     return new Stmt.Expression(value);
   }
   
+  /**
+   * parse expression
+   * @return expression
+   */
   private Expr expression() {
     return assignment();
   }
 
+  /**
+   * parse assignment expression
+   * @return expression
+   */
   private Expr assignment() {
     Expr expr = equality();
 
@@ -109,6 +168,10 @@ public class Parser {
     return expr;
   }
   
+  /**
+   * parse equality or inequality expression
+   * @return expression
+   */
   private Expr equality() {
     Expr expr = comparison();
     
@@ -121,6 +184,10 @@ public class Parser {
     return expr;
   }
   
+  /**
+   * match comparison operator expression
+   * @return expression
+   */
   private Expr comparison() {
     Expr expr = addition();
     
@@ -133,6 +200,10 @@ public class Parser {
     return expr;
   }
   
+  /**
+   * match addition or subtraction expression
+   * @return expression
+   */
   private Expr addition() {
     Expr expr = multiplication();
 
@@ -145,6 +216,10 @@ public class Parser {
     return expr;
   }
 
+  /**
+   * match multiplication or division expression
+   * @return expression
+   */
   private Expr multiplication() {
     Expr expr = unary();
 
@@ -157,6 +232,10 @@ public class Parser {
     return expr;
   }
   
+  /**
+   * match unary operator expression
+   * @return expression
+   */
   private Expr unary() {
     if (match(BANG, MINUS)) {
       Token operator = previous();
@@ -167,6 +246,10 @@ public class Parser {
     return primary();
   }
   
+  /**
+   * parse primary expression
+   * @return expression
+   */
   private Expr primary() {
     if (match(FALSE)) return new Expr.Literal(false);
     if (match(TRUE)) return new Expr.Literal(true);
@@ -189,17 +272,32 @@ public class Parser {
     throw error(peek(), "Expect expression.");
   }
   
+  /**
+   * if next token is of input type advance, else throw error
+   * @param type type to check for
+   * @param message message if error thrown
+   * @return token consumed
+   */
   private Token consume(TokenType type, String message) {
     if (check(type)) return advance();
 
     throw error(peek(), message);
   }
   
+  /**
+   * throw new parse error and report it
+   * @param token where the error occurred
+   * @param message error message
+   * @return error to throw
+   */
   private ParseError error(Token token, String message) {
     SparkleCode.error(token, message);
     return new ParseError();
   }
   
+  /**
+   * recover parser after error, advance until next statement
+   */
   private void synchronize() {
     advance();
 
@@ -222,6 +320,11 @@ public class Parser {
     }
   }
   
+  /**
+   * if any of the supplied types equal the type of the next token return true
+   * @param types list of types to check for
+   * @return boolean
+   */
   private boolean match(TokenType ... types) {
     for(TokenType type : types) {
       if(check(type)) {
@@ -232,25 +335,47 @@ public class Parser {
     return false;
   }
   
+  /**
+   * is the next token of the supplied type
+   * @param tokenType type
+   * @return boolean
+   */
   private boolean check(TokenType tokenType) {
+    // allow no semi colon after last statement
     if (isAtEnd() && tokenType == SEMICOLON) return true;
     if (isAtEnd()) return false;
     return peek().type == tokenType;
   }
   
+  /**
+   * consume token
+   * @return token that was consumed
+   */
   private Token advance() {
     if (!isAtEnd()) current++;
     return previous();
   }
   
+  /**
+   * is next token end of file
+   * @return boolean
+   */
   private boolean isAtEnd() {
     return peek().type == EOF;
   }
 
+  /**
+   * get next token
+   * @return token
+   */
   private Token peek() {
     return tokens.get(current);
   }
 
+  /**
+   * get previous token
+   * @return previous token
+   */
   private Token previous() {
     return tokens.get(current - 1);
   }

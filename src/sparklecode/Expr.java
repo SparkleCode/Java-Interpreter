@@ -1,3 +1,5 @@
+/* Generated code - do not modify */
+
 package sparklecode;
 
 import java.util.List;

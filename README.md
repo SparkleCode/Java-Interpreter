@@ -1,5 +1,7 @@
 # Sparkle Code
 
+based on the Lox language (http://www.craftinginterpreters.com/control-flow.html
+
 ## building
 build using netbeans java project
 
