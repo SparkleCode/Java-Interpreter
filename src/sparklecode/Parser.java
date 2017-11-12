@@ -181,7 +181,7 @@ public class Parser {
    * @return expression
    */
   private Expr assignment() {
-    Expr expr = equality();
+    Expr expr = or();
 
     if (match(EQUAL)) {
       Token equals = previous();
@@ -198,6 +198,38 @@ public class Parser {
     return expr;
   }
   
+  /**
+   * parse logical or || expression 
+   * @return expression
+   */
+  private Expr or() {
+    Expr expr = and();
+
+    while (match(OR)) {
+      Token operator = previous();
+      Expr right = and();
+      expr = new Expr.Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+  
+  /**
+   * parse logical and && expression
+   * @return expression
+   */
+  private Expr and() {
+    Expr expr = equality();
+
+    while (match(AND)) {
+      Token operator = previous();
+      Expr right = equality();
+      expr = new Expr.Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+    
   /**
    * parse equality or inequality expression
    * @return expression

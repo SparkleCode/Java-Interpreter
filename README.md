@@ -5,6 +5,13 @@ based on the Lox language (http://www.craftinginterpreters.com/control-flow.html
 ## building
 build using netbeans java project
 
+## Todo
+
+  - not instead of !
+  - block statement only after if, while, etc.
+  - proper support for optional trailing semicolon (currently mandatory unless last token in file)
+
+<!--
 # Features
 continuations
 decorators
@@ -220,4 +227,4 @@ let x = fn {
 let y = x(); // y is array
 let a, b = x(); // a is 5, b is 6
 a, b = b, a // swap values - a and b already defined so let is not needed
-```
+```-->
