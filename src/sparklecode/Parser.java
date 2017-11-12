@@ -33,8 +33,19 @@ import static sparklecode.TokenType.*;
  * @author Will
  */
 public class Parser {
+  /**
+   * exception thrown during parsing
+   */
   private static class ParseError extends RuntimeException {}
+  
+  /**
+   * input list of tokens
+   */
   private final List<Token> tokens;
+  
+  /**
+   * current token index
+   */
   private int current = 0;
   
   /**
@@ -97,10 +108,29 @@ public class Parser {
    * @return statement
    */
   private Stmt statement() {
+    if(match(IF)) return ifStatement();
     if(match(PRINT)) return printStatement();
     if(match(LEFT_BRACE)) return new Stmt.Block(block());
     
     return expressionStatement();
+  }
+  
+  /**
+   * parse if statement
+   * @return if statement
+   */
+  private Stmt ifStatement() {
+    consume(LEFT_PAREN, "Expect ( after if. ");
+    Expr condition = expression();
+    consume(RIGHT_PAREN, "Expect ) after condition. ");
+    
+    Stmt thenBranch = statement();
+    Stmt elseBranch = null;
+    if(match(ELSE)){
+      elseBranch = statement();
+    }
+    
+    return new Stmt.If(condition, thenBranch, elseBranch);
   }
   
   /**
@@ -175,7 +205,7 @@ public class Parser {
   private Expr equality() {
     Expr expr = comparison();
     
-    while(match(BANG, BANG_EQUAL)) {
+    while(match(EQUAL_EQUAL, BANG_EQUAL)) {
       Token operator = previous();
       Expr right = comparison();
       expr = new Expr.Binary(expr, operator, right);

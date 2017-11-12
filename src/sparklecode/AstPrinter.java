@@ -229,4 +229,9 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     builder.append(")");
     return builder.toString();
   }
+
+  @Override
+  public String visitIfStmt(Stmt.If stmt) {
+    return parenthesize2("if", stmt.condition, "then", stmt.thenBranch, "else", stmt.elseBranch);
+  }
 }
