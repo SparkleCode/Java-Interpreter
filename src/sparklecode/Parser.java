@@ -111,6 +111,7 @@ public class Parser {
     if(match(IF)) return ifStatement();
     if(match(PRINT)) return printStatement();
     if(match(LEFT_BRACE)) return new Stmt.Block(block());
+    if(match(WHILE)) return whileStatement();
     
     return expressionStatement();
   }
@@ -404,7 +405,7 @@ public class Parser {
    */
   private boolean check(TokenType tokenType) {
     // allow no semi colon after last statement
-    if (isAtEnd() && tokenType == SEMICOLON) return true;
+    // if (isAtEnd() && tokenType == SEMICOLON) return true;
     if (isAtEnd()) return false;
     return peek().type == tokenType;
   }
@@ -440,5 +441,14 @@ public class Parser {
    */
   private Token previous() {
     return tokens.get(current - 1);
+  }
+  
+  private Stmt whileStatement() {
+    consume(LEFT_PAREN, "Expect ( after while. ");
+    Expr condition = expression();
+    consume(RIGHT_PAREN, "Expect ) after while condition. ");
+    
+    Stmt body = statement();
+    return new Stmt.While(condition, body);
   }
 }

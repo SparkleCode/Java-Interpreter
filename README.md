@@ -1,12 +1,15 @@
 # Sparkle Code
 
-based on the Lox language (http://www.craftinginterpreters.com/control-flow.html
+based on the Lox language http://www.craftinginterpreters.com/
 
 ## building
 build using netbeans java project
 
-## Todo
+## Improvements over tutorial
+  - block comments - you can have on inside another
+  - runtime error if uninitialised value is accessed
 
+## Todo
   - not instead of !
   - block statement only after if, while, etc.
   - proper support for optional trailing semicolon (currently mandatory unless last token in file)

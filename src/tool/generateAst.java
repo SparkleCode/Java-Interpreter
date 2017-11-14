@@ -58,7 +58,8 @@ public class generateAst {
       "Expression : Expr expression",
       "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
       "Print      : Expr expression",
-      "Var        : Token name, Expr initializer"
+      "Var        : Token name, Expr initializer",
+      "While      : Expr condition, Stmt body"
     ));
   }
 
@@ -111,7 +112,7 @@ public class generateAst {
   private static void defineType(PrintWriter writer, 
           String baseName, String className, String fieldList) {
     writer.println();
-    writer.println("  static public class " + className + " extends " + baseName + "{");
+    writer.println("  static public class " + className + " extends " + baseName + " {");
     
     // constructor
     writer.println("    " + className + "(" + fieldList + ") {");

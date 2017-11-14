@@ -52,7 +52,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       for(Stmt stmt : statements){
         i++;
         // if last statement enable printing expression statements
-        if(i >= statements.size() && SparkleCode.inRepl){
+        if(i >= statements.size() && SparkleCode.inRepl && i == 0){
           printExpr = true;
         }
         excecute(stmt);
@@ -379,5 +379,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     return evaluate(expr.right);
+  }
+
+  @Override
+  public Void visitWhileStmt(Stmt.While stmt) {
+    while(isTruthy(evaluate(stmt.condition))) {
+      excecute(stmt.body);
+    }
+    return null;
   }
 }
