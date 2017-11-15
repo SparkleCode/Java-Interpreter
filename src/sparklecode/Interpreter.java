@@ -381,6 +381,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return evaluate(expr.right);
   }
 
+  /**
+   * run while statement
+   * @param stmt while statement
+   * @return void
+   */
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
     while(isTruthy(evaluate(stmt.condition))) {

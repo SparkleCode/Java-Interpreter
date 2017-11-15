@@ -115,6 +115,8 @@ public class Parser {
     if(match(LEFT_BRACE)) return new Stmt.Block(block());
     if(match(WHILE)) return whileStatement();
     
+    if(match(SEMICOLON)) return null;
+    
     return expressionStatement();
   }
   
@@ -445,6 +447,10 @@ public class Parser {
     return tokens.get(current - 1);
   }
   
+  /**
+   * parse while statement
+   * @return while statement
+   */
   private Stmt whileStatement() {
     consume(LEFT_PAREN, "Expect ( after while. ");
     Expr condition = expression();
@@ -454,6 +460,10 @@ public class Parser {
     return new Stmt.While(condition, body);
   }
   
+  /**
+   * parse and desugar for statement
+   * @return while statement in block
+   */
    private Stmt forStatement() {
     consume(LEFT_PAREN, "Expect ( after for. ");
     
@@ -480,6 +490,7 @@ public class Parser {
     
     Stmt body = statement();
     
+    // add incrementer to body
     if(increment != null){
       body = new Stmt.Block(Arrays.asList(
         body,
@@ -487,9 +498,11 @@ public class Parser {
       ));
     }
     
-    if(condition == null) condition = new Expr.Literal(true);
+    // set while loop condition
+    if(condition == null) condition = new Expr.Literal(true); // infinite loop
     body = new Stmt.While(condition, body);
     
+    // add initializer in block
     if(initializer != null) {
       body = new Stmt.Block(Arrays.asList(initializer, body));
     }

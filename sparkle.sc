@@ -8,4 +8,4 @@ for(var count = 0; count <= 20; count = count + 1)  {
     var temp = a;
     a = b;
     b = temp + a;
-}
+};
