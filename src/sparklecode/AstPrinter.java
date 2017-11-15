@@ -104,7 +104,7 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
       if (part instanceof Expr) {
         builder.append(((Expr)part).accept(this));
       } else if (part instanceof Stmt) {
-        builder.append(((Stmt) part).accept(this));
+        builder.append(print(((Stmt) part)));
       } else if (part instanceof Token) {
         builder.append(((Token) part).lexeme);
       } else {

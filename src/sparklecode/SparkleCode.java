@@ -64,13 +64,15 @@ public class SparkleCode {
    * @throws java.io.IOException
    */
   public static void main(String[] args) throws IOException {
+    runFile("sparkle.sc");
+    /*
     if(args.length > 1) {
       System.out.println("Usage: SparkleCode [script]");
     } else if(args.length == 1) {
       runFile(args[0]);
     } else {
       runPrompt();
-    }
+    }*/
   }
   
   /**
@@ -117,8 +119,8 @@ public class SparkleCode {
     // Stop if there was a syntax error.
     if (hadError) return;
     
-    INTERP.interpret(statements);
     System.out.println(new AstPrinter().print(statements));
+    INTERP.interpret(statements);
   }
   
   /**
@@ -150,7 +152,7 @@ public class SparkleCode {
    */
   static private void report(int line, String where, String message) {
     System.err.println("[line " + line + "] Error" + where + ": " + message);
-    hadError = false;
+    hadError = true;
   }
 
   /**
