@@ -100,7 +100,7 @@ public class Parser {
       initialiser = expression();
     }
     
-    consume(SEMICOLON, "Expect ';' after variable declaration.");
+    consumeStmtEnd("Expect ';' after variable declaration.");
     return new Stmt.Var(name, initialiser);
   }
   
@@ -114,8 +114,6 @@ public class Parser {
     if(match(PRINT)) return printStatement();
     if(match(LEFT_BRACE)) return new Stmt.Block(block());
     if(match(WHILE)) return whileStatement();
-    
-    if(match(SEMICOLON)) return null;
     
     return expressionStatement();
   }
@@ -135,6 +133,8 @@ public class Parser {
       elseBranch = statement();
     }
     
+    consumeStmtEnd();
+    
     return new Stmt.If(condition, thenBranch, elseBranch);
   }
   
@@ -150,6 +150,8 @@ public class Parser {
     }
     
     consume(RIGHT_BRACE, "Expected } after block statement");
+    consumeStmtEnd();
+    
     return statements;
   }
   
@@ -159,7 +161,7 @@ public class Parser {
    */
   private Stmt printStatement() {
     Expr value = expression();
-    consume(SEMICOLON, "Expected ';' after value.");
+    consumeStmtEnd("Expected ';' after value.");
     return new Stmt.Print(value);
   }
   
@@ -169,7 +171,7 @@ public class Parser {
    */
   private Stmt expressionStatement() {
     Expr value = expression();
-    consume(SEMICOLON, "Expected ';' after expression.");
+    consumeStmtEnd("Expected ';' after expression.");
     return new Stmt.Expression(value);
   }
   
@@ -457,6 +459,8 @@ public class Parser {
     consume(RIGHT_PAREN, "Expect ) after while condition. ");
     
     Stmt body = statement();
+    
+    consumeStmtEnd();
     return new Stmt.While(condition, body);
   }
   
@@ -506,6 +510,34 @@ public class Parser {
     if(initializer != null) {
       body = new Stmt.Block(Arrays.asList(initializer, body));
     }
+    
+    consumeStmtEnd();
     return body;
   }
+   
+   private void consumeStmtEnd() {
+     consumeStmtEnd("", true);
+   }
+   
+   private void consumeStmtEnd(String message) {
+     consumeStmtEnd(message, false);
+   }
+   
+   /**
+    * consume semicolons
+    * @param message
+    * @param optional
+    */
+   private void consumeStmtEnd(String message, boolean optional) {
+     if(check(RIGHT_BRACE)){}
+     else if(match(SEMICOLON)){
+       while(true){
+         if(!match(SEMICOLON)){
+           return;
+         }
+       }
+     } else if(!optional) {
+       throw error(peek(), message);
+     }
+   }
 }
