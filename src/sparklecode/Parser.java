@@ -312,9 +312,45 @@ public class Parser {
       return new Expr.Unary(operator, right);
     }
 
-    return primary();
+    return call();
   }
   
+  /**
+   * parses call expression and curried syntax - a()()
+   * @return nested call expression
+   */
+  private Expr call() {
+    Expr expr = primary();
+    
+    while(true) {
+      if(match(LEFT_PAREN)) {
+        expr = finishCall(expr);
+      } else {
+        break;
+      }
+    }
+    
+    return expr;
+  }
+  
+  /**
+   * 
+   */
+  private Expr finishCall(Expr expr) {
+    List<Expr> arguments = new ArrayList<>();
+    if(!check(RIGHT_PAREN)) {
+      do {
+        if(arguments.size() >= 8) {
+          error(peek(), "Cannot have more than 8 arguments");
+        }
+        arguments.add(expression());
+      } while(match(COMMA));
+    }
+    
+    Token paren = consume(RIGHT_PAREN, "Expect ) after arguments");
+    
+    return new Expr.Call(expr, paren, arguments);
+  }
   /**
    * parse primary expression
    * @return expression
@@ -520,6 +556,7 @@ public class Parser {
    }
    
    private void consumeStmtEnd(String message) {
+     // apparently if       (false) is made true, all semicolons are optional
      consumeStmtEnd(message, false);
    }
    

@@ -8,6 +8,7 @@ abstract class Expr {
   public interface Visitor<R> {
     public R visitAssignExpr(Assign expr);
     public R visitBinaryExpr(Binary expr);
+    public R visitCallExpr(Call expr);
     public R visitGroupingExpr(Grouping expr);
     public R visitLiteralExpr(Literal expr);
     public R visitLogicalExpr(Logical expr);
@@ -15,7 +16,7 @@ abstract class Expr {
     public R visitVariableExpr(Variable expr);
   }
 
-  static public class Assign extends Expr{
+  static public class Assign extends Expr {
     Assign(Token name, Expr value) {
       this.name = name;
       this.value = value;
@@ -30,7 +31,7 @@ abstract class Expr {
     final Expr value;
   }
 
-  static public class Binary extends Expr{
+  static public class Binary extends Expr {
     Binary(Expr left, Token operator, Expr right) {
       this.left = left;
       this.operator = operator;
@@ -47,7 +48,24 @@ abstract class Expr {
     final Expr right;
   }
 
-  static public class Grouping extends Expr{
+  static public class Call extends Expr {
+    Call(Expr callee, Token paren, List<Expr> arguments) {
+      this.callee = callee;
+      this.paren = paren;
+      this.arguments = arguments;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitCallExpr(this);
+    }
+
+    final Expr callee;
+    final Token paren;
+    final List<Expr> arguments;
+  }
+
+  static public class Grouping extends Expr {
     Grouping(Expr expression) {
       this.expression = expression;
     }
@@ -60,7 +78,7 @@ abstract class Expr {
     final Expr expression;
   }
 
-  static public class Literal extends Expr{
+  static public class Literal extends Expr {
     Literal(Object value) {
       this.value = value;
     }
@@ -73,7 +91,7 @@ abstract class Expr {
     final Object value;
   }
 
-  static public class Logical extends Expr{
+  static public class Logical extends Expr {
     Logical(Expr left, Token operator, Expr right) {
       this.left = left;
       this.operator = operator;
@@ -90,7 +108,7 @@ abstract class Expr {
     final Expr right;
   }
 
-  static public class Unary extends Expr{
+  static public class Unary extends Expr {
     Unary(Token operator, Expr right) {
       this.operator = operator;
       this.right = right;
@@ -105,7 +123,7 @@ abstract class Expr {
     final Expr right;
   }
 
-  static public class Variable extends Expr{
+  static public class Variable extends Expr {
     Variable(Token name) {
       this.name = name;
     }

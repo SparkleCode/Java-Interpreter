@@ -24,6 +24,7 @@
 
 package sparklecode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,14 +33,36 @@ import java.util.List;
  */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   /**
+   * reference to base environment
+   */
+  final Environment globals = new Environment();
+  
+  /**
    * The current environment
    */
-  private Environment env = new Environment();
+  private Environment env = globals;
   
   /**
    * should expressions be printed explicitly
    */
   private boolean printExpr = false;
+
+  /**
+   * Constructor to initialise native functions
+   */
+  public Interpreter() {
+    globals.define("clock", new SparkleCallable() {
+      @Override
+      public Object call(Interpreter interp, List<Object> arguments) {
+        return (double)System.currentTimeMillis() / 1000.0;
+      }
+
+      @Override
+      public int arity() {
+        return 0;
+      }
+    });
+  }
   
   /**
    * run list of statements in current scope
@@ -392,5 +415,34 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       excecute(stmt.body);
     }
     return null;
+  }
+
+  /**
+   * call function
+   * @param expr function call expression
+   * @return return value of function
+   */
+  @Override
+  public Object visitCallExpr(Expr.Call expr) {
+   Object callee = evaluate(expr.callee);
+   
+   if(!(callee instanceof SparkleCallable)) {
+     throw new RuntimeError(expr.paren, "Can only call functions and classes. ");
+   }
+   
+   List<Object> arguments = new ArrayList<>();
+   expr.arguments.forEach((argument) -> {
+     arguments.add(evaluate(argument));
+    });
+   
+    SparkleCallable function = (SparkleCallable)callee;
+    
+    if(arguments.size() != function.arity()) {
+      throw new RuntimeError(expr.paren, "Expected " +
+              function.arity() + " arguments but got " + 
+              arguments.size() + " arguments. ");
+    }
+    
+    return function.call(this, arguments);
   }
 }

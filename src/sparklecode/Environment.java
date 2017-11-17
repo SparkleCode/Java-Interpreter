@@ -116,6 +116,15 @@ public class Environment {
   }
   
   /**
+   * Add new value to map, assuming the value has been initialised
+   * @param name name of variable
+   * @param value value of variable
+   */
+  public void define(String name, Object value) {
+    define(name, value, true);
+  }
+  
+  /**
    * Add new value to map
    * @param name name of variable
    * @param value value of variable
