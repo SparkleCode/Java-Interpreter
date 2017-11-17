@@ -359,7 +359,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
    * @param statements list of statements
    * @param environment environment to run the block in
    */
-  private void excecuteBlock(List<Stmt> statements, Environment environment) {
+  public void excecuteBlock(List<Stmt> statements, Environment environment) {
     Environment previous = this.env;
     try {
       this.env = environment;
@@ -444,5 +444,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
     
     return function.call(this, arguments);
+  }
+
+  @Override
+  public Void visitFunctionStmt(Stmt.Function stmt) {
+    SparkleFunction fun = new SparkleFunction(stmt);
+    env.define(stmt.name.lexeme, fun);
+    return null;
   }
 }

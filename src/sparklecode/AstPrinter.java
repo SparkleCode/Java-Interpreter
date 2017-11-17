@@ -264,4 +264,24 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
   public String visitCallExpr(Expr.Call expr) {
     return parenthesize2("call", expr.callee, expr.arguments);
   }
+  
+   @Override
+  public String visitFunctionStmt(Stmt.Function stmt) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("(fun " + stmt.name.lexeme + "(");
+
+    for (Token param : stmt.parameters) {
+      if (param != stmt.parameters.get(0)) builder.append(" ");
+      builder.append(param.lexeme);
+    }
+
+    builder.append(") ");
+
+    for (Stmt body : stmt.body) {
+      builder.append(body.accept(this));
+    }
+
+    builder.append(")");
+    return builder.toString();
+  }
 }
