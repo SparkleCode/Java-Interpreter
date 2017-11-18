@@ -112,8 +112,9 @@ public class Parser {
   private Stmt statement() {
     if(match(FOR)) return forStatement();
     if(match(IF)) return ifStatement();
-    if(match(PRINT)) return printStatement();
     if(match(LEFT_BRACE)) return new Stmt.Block(block());
+    if(match(PRINT)) return printStatement();
+    if(match(RETURN)) return returnStatement();
     if(match(WHILE)) return whileStatement();
     
     return expressionStatement();
@@ -567,7 +568,10 @@ public class Parser {
     * @param optional
     */
    private void consumeStmtEnd(String message, boolean optional) {
-     if(check(RIGHT_BRACE)){}
+     if(check(RIGHT_BRACE)){
+       return;
+     }
+     if(isAtEnd()) {}
      else if(match(SEMICOLON)){
        while(true){
          if(!match(SEMICOLON)){
@@ -603,5 +607,17 @@ public class Parser {
     consume(LEFT_BRACE, "Expect { before " + kind + " body. ");
     List<Stmt> body = block();
     return new Stmt.Function(name, parameters, body);
+  }
+   
+  private Stmt returnStatement() {
+    Token keyword = previous();
+    
+    Expr value = null;
+    if(!check(SEMICOLON)) {
+      value = expression();
+    }
+    
+    consumeStmtEnd("Expect ; after return value");
+    return new Stmt.Return(keyword, value);
   }
 }

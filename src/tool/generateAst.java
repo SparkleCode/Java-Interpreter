@@ -60,6 +60,7 @@ public class generateAst {
       "Function   : Token name, List<Token> parameters, List<Stmt> body",
       "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
       "Print      : Expr expression",
+      "Return     : Token keyword, Expr value",
       "Var        : Token name, Expr initializer",
       "While      : Expr condition, Stmt body"
     ));
@@ -86,7 +87,7 @@ public class generateAst {
     writer.println();
     writer.println("import java.util.List;");
     writer.println();
-    writer.println("abstract class " + baseName + " {");
+    writer.println("public abstract class " + baseName + " {");
     
     defineVisitor(writer, baseName, types);
     

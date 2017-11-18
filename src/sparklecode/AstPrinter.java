@@ -107,6 +107,10 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         builder.append(print(((Stmt) part)));
       } else if (part instanceof Token) {
         builder.append(((Token) part).lexeme);
+      } else if (part instanceof List) {
+        ((List) part).forEach((o) -> {
+          builder.append(parenthesize2("list", o));
+        });
       } else {
         builder.append(part);
       }
@@ -268,20 +272,27 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
    @Override
   public String visitFunctionStmt(Stmt.Function stmt) {
     StringBuilder builder = new StringBuilder();
-    builder.append("(fun " + stmt.name.lexeme + "(");
+    builder.append("(fun ").append(stmt.name.lexeme).append("(");
 
-    for (Token param : stmt.parameters) {
+    stmt.parameters.stream().map((param) -> {
       if (param != stmt.parameters.get(0)) builder.append(" ");
+      return param;
+    }).forEachOrdered((param) -> {
       builder.append(param.lexeme);
-    }
+    });
 
     builder.append(") ");
 
-    for (Stmt body : stmt.body) {
+    stmt.body.forEach((body) -> {
       builder.append(body.accept(this));
-    }
+    });
 
     builder.append(")");
     return builder.toString();
+  }
+
+  @Override
+  public String visitReturnStmt(Stmt.Return stmt) {
+    return parenthesize("return", stmt.value);
   }
 }

@@ -4,13 +4,14 @@ package sparklecode;
 
 import java.util.List;
 
-abstract class Stmt {
+public abstract class Stmt {
   public interface Visitor<R> {
     public R visitBlockStmt(Block stmt);
     public R visitExpressionStmt(Expression stmt);
     public R visitFunctionStmt(Function stmt);
     public R visitIfStmt(If stmt);
     public R visitPrintStmt(Print stmt);
+    public R visitReturnStmt(Return stmt);
     public R visitVarStmt(Var stmt);
     public R visitWhileStmt(While stmt);
   }
@@ -86,6 +87,21 @@ abstract class Stmt {
     }
 
     final Expr expression;
+  }
+
+  static public class Return extends Stmt {
+    Return(Token keyword, Expr value) {
+      this.keyword = keyword;
+      this.value = value;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitReturnStmt(this);
+    }
+
+    final Token keyword;
+    final Expr value;
   }
 
   static public class Var extends Stmt {

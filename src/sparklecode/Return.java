@@ -23,43 +23,15 @@
  */
 package sparklecode;
 
-import java.util.List;
-
 /**
- * Representation of user created function object
+ *
  * @author Will
  */
-public class SparkleFunction implements SparkleCallable {
-  private final Stmt.Function declaration;
+public class Return extends RuntimeException {
+  final Object value;
 
-  public SparkleFunction(Stmt.Function declaration) {
-    this.declaration = declaration;
-  }
-  
-  
-  @Override
-  public Object call(Interpreter interp, List<Object> arguments) {
-    Environment environment = new Environment(interp.globals);
-    for(int i = 0; i < declaration.parameters.size(); i++) {
-      environment.define(declaration.parameters.get(i).lexeme,
-              arguments.get(i));
-    }
-    
-    try {
-      interp.excecuteBlock(declaration.body, environment);
-    } catch(Return r) {
-      return r.value;
-    }
-    return null;
-  }
-
-  @Override
-  public int arity() {
-    return declaration.parameters.size();
-  }
-  
-  @Override
-  public String toString(){
-    return "<fn " + declaration.name.lexeme + ">";
+  public Return(Object value) {
+    super(null, null, false, false);
+    this.value = value;
   }
 }
