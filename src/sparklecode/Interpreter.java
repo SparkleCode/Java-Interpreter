@@ -448,7 +448,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
-    SparkleFunction fun = new SparkleFunction(stmt);
+    SparkleFunction fun = new SparkleFunction(stmt, env);
     env.define(stmt.name.lexeme, fun);
     return null;
   }

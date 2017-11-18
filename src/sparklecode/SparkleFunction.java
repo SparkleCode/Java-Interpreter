@@ -31,15 +31,17 @@ import java.util.List;
  */
 public class SparkleFunction implements SparkleCallable {
   private final Stmt.Function declaration;
+  private final Environment closure;
 
-  public SparkleFunction(Stmt.Function declaration) {
+  public SparkleFunction(Stmt.Function declaration, Environment closure) {
     this.declaration = declaration;
+    this.closure = closure;
   }
   
   
   @Override
   public Object call(Interpreter interp, List<Object> arguments) {
-    Environment environment = new Environment(interp.globals);
+    Environment environment = new Environment(closure);
     for(int i = 0; i < declaration.parameters.size(); i++) {
       environment.define(declaration.parameters.get(i).lexeme,
               arguments.get(i));

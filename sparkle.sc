@@ -1,9 +1,15 @@
 // test file for interpreter
 
-fn fibonacci(n) {
-    if (n <= 1) return n;
-    return fibonacci(n - 2) + fibonacci(n - 1)
+fn makeCounter() {
+    var i = 0;
+    fn count() {
+        i = i + 1;
+        return i - 1;
+    }
+    return count;
 }
 
-print fibonacci(20);
-print fibonacci
+var counter = makeCounter();
+for(var i = 0; i < 20; i = i + 1) {
+    print counter();
+}
