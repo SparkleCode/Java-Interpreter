@@ -25,17 +25,21 @@
 package sparklecode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Run list of statements
  * @author Will
  */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+  private static Object uninitialized = new Object();
+  
   /**
    * reference to base environment
    */
-  final Environment globals = new Environment();
+  private final Environment globals = new Environment();
   
   /**
    * The current environment
@@ -46,6 +50,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
    * should expressions be printed explicitly
    */
   private boolean printExpr = false;
+  private final Map<Expr, Integer> locals = new HashMap<>();
 
   /**
    * Constructor to initialise native functions
@@ -62,6 +67,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return 0;
       }
     });
+  }
+  
+  public void resolve(Expr expr, int depth) {
+    locals.put(expr, depth);
+  }
+  
+  private Object lookupVariable(Token name, Expr expr) {
+    Integer distance = locals.get(expr);
+    if(distance != null) {
+      return env.getAt(distance, name.lexeme);
+    } else {
+      return globals.get(name);
+    }
   }
   
   /**
@@ -311,7 +329,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
    */
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
-    return env.get(expr.name);
+    Object value = lookupVariable(expr.name, expr);
+    if(value == uninitialized){
+      throw new RuntimeError(expr.name, 
+              "Cannot access uninitialized variable \"" + 
+                      expr.name.lexeme + "\". ");
+    }
+    return value;
   }
 
   /**
@@ -321,12 +345,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
    */
   @Override
   public Void visitVarStmt(Stmt.Var stmt) {
-    Object value = null;
+    Object value = uninitialized;
     if (stmt.initializer != null) {
       value = evaluate(stmt.initializer);
     }
 
-    env.define(stmt.name.lexeme, value, stmt.initializer != null);
+    env.define(stmt.name.lexeme, value);
     return null;
   }
 
@@ -339,7 +363,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Object visitAssignExpr(Expr.Assign expr) {
     Object value = evaluate(expr.value);
 
-    env.assign(expr.name, value);
+    Integer distance = locals.get(expr);
+    if (distance != null) {
+      env.assignAt(distance, expr.name, value);
+    } else {
+      globals.assign(expr.name, value);
+    }
     return value;
   }
   

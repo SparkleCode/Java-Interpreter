@@ -119,6 +119,12 @@ public class SparkleCode {
     // Stop if there was a syntax error.
     if (hadError) return;
     
+    Resolver resolver = new Resolver(INTERP);
+    resolver.resolve(statements);
+    
+    // Stop if there was a resolution error.
+    if (hadError) return;
+    
     System.out.println(new AstPrinter().print(statements));
     INTERP.interpret(statements);
   }

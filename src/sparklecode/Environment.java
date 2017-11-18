@@ -32,63 +32,7 @@ import java.util.Map;
  * Contains wrapper methods around get, define and assign to check for errors.
  * @author Will
  */
-public class Environment {
-  
-  /**
-   * This is an internal class used to store additional information
-   * such as whether the variable has been initialised to each
-   * object stored in the environment
-   */
-  public class Val {
-    
-    /**
-     * The value stored in this class
-     */
-    private Object value;
-
-    /**
-     * Does this class have a value (null is a valid value)
-     */
-    public boolean isInit;
-    
-    /**
-     * the name this value is referred to in the environment map
-     */
-    public String name;
-    
-    /**
-     * 
-     * @param v the value of this class
-     * @param i has this class been initialised
-     * @param n the name of this value in the environment map
-     */
-    public Val(Object v, boolean i, String n) {
-      value = v;
-      isInit = i;
-      name = n;
-    }
-    /**
-     * Getter for the value of this class
-     * Throws <code> RuntimeError </code> if the value has not been initialised
-     * @param n current token, for error reporting
-     * @return value of this class
-     */
-    public Object value(Token n) {
-      if(isInit) return value;
-      throw new RuntimeError(n, "Attempt to use uninitialised variable, '" + name + "'. ");
-    }
-    
-    /**
-     * Setter for the value of this class
-     * sets value and <code> isInit </code> to true
-     * @param v value to set this class to
-     */
-    public void value(Object v) {
-      isInit = true;
-      value = v;
-    }
-  }
-  
+public class Environment {  
   /**
    * Parent environment
    */
@@ -97,7 +41,7 @@ public class Environment {
   /**
    * Map of value names and values
    */
-  private final Map<String,Val> values = new HashMap<>();
+  private final Map<String, Object> values = new HashMap<>();
 
   /**
    * new global environment
@@ -120,19 +64,14 @@ public class Environment {
    * @param name name of variable
    * @param value value of variable
    */
-  public void define(String name, Object value) {
-    define(name, value, true);
-  }
   
   /**
    * Add new value to map
    * @param name name of variable
    * @param value value of variable
-   * @param isInit has this variable been initialised (null in 
-   *  <code> value </code> could indicate value of null or not initialised)
    */
-  public void define(String name, Object value, boolean isInit) {
-    values.put(name, new Val(value, isInit, name));
+  public void define(String name, Object value) {
+    values.put(name, value);
   }
   
   /**
@@ -143,36 +82,31 @@ public class Environment {
   public Object get(Token name) {
     if (values.containsKey(name.lexeme)) {
       // get value from current map
-      return values.get(name.lexeme).value(name);
-    }
-    
-    // get Val class from parent 
-    if(enclosing != null) return enclosing.getInt(name).value(name);
-    
-    // cannot find variable
-    throw new RuntimeError(name,
-        "Undefined variable '" + name.lexeme + "'.");
-  }
-  
-  /**
-   * Internally used method, has to be public so this method on the parent.
-   * Used to get the Val class out of a map from a lower scope.
-   * can be accessed
-   * @param name token containing name as lexeme
-   * @return Val class of value
-   */
-  public Val getInt(Token name) {
-    if (values.containsKey(name.lexeme)) {
-      // get Val class from map
       return values.get(name.lexeme);
     }
     
-    // get Val class from parent
-    if(enclosing != null) return enclosing.getInt(name);
+    // get object from parent 
+    if(enclosing != null) return enclosing.get(name);
     
     // cannot find variable
     throw new RuntimeError(name,
-        "Undefined variable '" + name.lexeme + "'.");
+        "Undefined variable '" + name.lexeme + "'. ");
+  }
+  
+  public Object getAt(int distance, String name) {
+    return ancestor(distance).values.get(name);
+  }
+  
+  public Environment ancestor(int distance) {
+    Environment environment = this;
+    for(int i = 0; i < distance; i++) {
+      environment = environment.enclosing;
+    }
+    return environment;
+  }
+  
+  public void assignAt(int distance, Token name, Object value) {
+    ancestor(distance).values.put(name.lexeme, value);
   }
   
   /**
@@ -181,14 +115,10 @@ public class Environment {
    * @param name token containing name as lexeme
    * @param value value to set the variable to
    */
-  
-  
-  
   public void assign(Token name, Object value) {
     // value in this environment
     if (values.containsKey(name.lexeme)) {
-      Val v = getInt(name);
-      v.value(value);
+      values.put(name.lexeme, value);
       return;
     }
     
