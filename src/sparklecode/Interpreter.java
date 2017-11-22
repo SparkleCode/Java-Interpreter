@@ -34,7 +34,7 @@ import java.util.Map;
  * @author Will
  */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-  private static Object uninitialized = new Object();
+  private static final Object UNINITIALIZED = new Object();
   
   /**
    * reference to base environment
@@ -330,7 +330,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
     Object value = lookupVariable(expr.name, expr);
-    if(value == uninitialized){
+    if(value == UNINITIALIZED){
       throw new RuntimeError(expr.name, 
               "Cannot access uninitialized variable \"" + 
                       expr.name.lexeme + "\". ");
@@ -345,7 +345,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
    */
   @Override
   public Void visitVarStmt(Stmt.Var stmt) {
-    Object value = uninitialized;
+    Object value = UNINITIALIZED;
     if (stmt.initializer != null) {
       value = evaluate(stmt.initializer);
     }
@@ -488,5 +488,48 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     if(stmt.value != null) value = evaluate(stmt.value);
     
     throw new Return(value);
+  }
+  
+  @Override
+  public Void visitClassStmt(Stmt.Class stmt) {
+    env.define(stmt.name.lexeme, UNINITIALIZED);
+    
+    Map<String, SparkleFunction> methods = new HashMap<>();
+    stmt.methods.forEach((method) -> {
+      SparkleFunction function = new SparkleFunction(method, env);
+      methods.put(method.name.lexeme, function);
+    });
+    
+    SparkleClass klass = new SparkleClass(stmt.name.lexeme, methods);
+    env.assign(stmt.name, klass);
+    return null;
+  }
+  
+  @Override
+  public Object visitGetExpr(Expr.Get expr) {
+    Object obj = evaluate(expr.object);
+    if(obj instanceof SparkleInstance) {
+      return ((SparkleInstance) obj).get(expr.name);
+    }
+    
+    throw new RuntimeError(expr.name, "Only instances have properties");
+  }
+
+  @Override
+  public Object visitSetExpr(Expr.Set expr) {
+    Object obj = evaluate(expr.object);
+    
+    if(!(obj instanceof SparkleInstance)) {
+      throw new RuntimeError(expr.name, "Only instances have fields");
+    }
+    
+    Object value = evaluate(expr.value);
+    ((SparkleInstance) obj).set(expr.name, value);
+    return value;
+  }
+
+  @Override
+  public Object visitThisExpr(Expr.This expr) {
+    return lookupVariable(expr.keyword, expr);
   }
 }

@@ -295,4 +295,24 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
   public String visitReturnStmt(Stmt.Return stmt) {
     return parenthesize("return", stmt.value);
   }
+
+  @Override
+  public String visitClassStmt(Stmt.Class stmt) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String visitGetExpr(Expr.Get expr) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String visitSetExpr(Expr.Set expr) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String visitThisExpr(Expr.This expr) {
+    return "this";
+  }
 }

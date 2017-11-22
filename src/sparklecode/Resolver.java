@@ -38,12 +38,19 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   private enum FunctionType {
     NONE,
+    METHOD,
     FUNCTION
+  }
+  
+  private enum ClassType {
+    NONE,
+    CLASS
   }
 
   private final Interpreter interpreter;
   private final Stack<Map<String, Boolean>> scopes = new Stack<>();
   private FunctionType currentFunction = FunctionType.NONE;
+  private ClassType currentClass = ClassType.NONE;
 
   public Resolver(Interpreter interpreter) {
     beginScope();
@@ -141,6 +148,12 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     return null;
   }
+  
+  @Override
+  public Void visitGetExpr(Expr.Get expr) {
+    resolve(expr.object);
+    return null;
+  }
 
   @Override
   public Void visitGroupingExpr(Expr.Grouping expr) {
@@ -159,7 +172,23 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     resolve(expr.right);
     return null;
   }
-
+  
+  @Override
+  public Void visitSetExpr(Expr.Set expr) {
+    resolve(expr.object);
+    resolve(expr.value);
+    return null;
+  }
+  
+  @Override
+  public Void visitThisExpr(Expr.This expr) {
+    if(currentClass == ClassType.NONE) {
+      SparkleCode.error(expr.keyword, "Cannot use 'this' outside a method. ");
+    }
+    resolveLocal(expr, expr.keyword);
+    return null;
+  }
+  
   @Override
   public Void visitUnaryExpr(Expr.Unary expr) {
     resolve(expr.right);
@@ -184,6 +213,29 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     beginScope();
     resolve(stmt.statements);
     endScope();
+    return null;
+  }
+  
+  @Override
+  public Void visitClassStmt(Stmt.Class stmt) {
+    declare(stmt.name);
+    define(stmt.name);
+    
+    ClassType enclosingClass = currentClass;
+    currentClass = ClassType.CLASS;
+    
+    beginScope();
+    scopes.peek().put("this", true);
+    
+    stmt.methods.forEach((method) -> {
+      FunctionType declaration = FunctionType.METHOD;
+      resolveFunction(method, declaration);
+    });
+    
+    endScope();
+    
+    currentClass = enclosingClass;
+    
     return null;
   }
 

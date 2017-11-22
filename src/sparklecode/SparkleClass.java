@@ -24,50 +24,49 @@
 package sparklecode;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * Representation of user created function object
+ *
  * @author Will
  */
-public class SparkleFunction implements SparkleCallable {
-  private final Stmt.Function declaration;
-  private final Environment closure;
+public class SparkleClass implements SparkleCallable {
+  public final String name;
+  public final Map<String, SparkleFunction> methods;
 
-  public SparkleFunction(Stmt.Function declaration, Environment closure) {
-    this.declaration = declaration;
-    this.closure = closure;
+  public SparkleClass(String name, Map<String, SparkleFunction> methods) {
+    this.name = name;
+    this.methods = methods;
   }
-  
   
   @Override
-  public Object call(Interpreter interp, List<Object> arguments) {
-    Environment environment = new Environment(closure);
-    for(int i = 0; i < declaration.parameters.size(); i++) {
-      environment.define(declaration.parameters.get(i).lexeme,
-              arguments.get(i));
-    }
-    
-    try {
-      interp.excecuteBlock(declaration.body, environment);
-    } catch(Return r) {
-      return r.value;
-    }
-    return null;
+  public String toString() {
+    return name;
   }
-  
-  public SparkleFunction bind(SparkleInstance instance) {
-    Environment environment = new Environment(closure);
-    environment.define("this", instance);
-    return new SparkleFunction(declaration, environment);
-  };
+
+  @Override
+  public Object call(Interpreter interp, List<Object> arguments) {
+    SparkleInstance instance = new SparkleInstance(this);
+    
+    SparkleFunction init = methods.get("init");
+    if(init != null){
+      init.bind(instance).call(interp, arguments);
+    }
+    return instance;
+  }
 
   @Override
   public int arity() {
-    return declaration.parameters.size();
+    SparkleFunction init = methods.get("init");
+    if(init == null) return 0;
+    return init.arity();
   }
-  
-  @Override
-  public String toString(){
-    return "<fn " + declaration.name.lexeme + ">";
+
+  SparkleFunction findMethod(SparkleInstance instance, String name) {
+    if(methods.containsKey(name)) {
+      return methods.get(name).bind(instance);
+    }
+    
+    return null;
   }
 }

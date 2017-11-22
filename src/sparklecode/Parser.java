@@ -79,6 +79,7 @@ public class Parser {
    */
   private Stmt declaration() {
     try {
+      if(match(CLASS)) return classDeclaration();
       if(match(FN)) return function("function");
       if(match(VAR)) return varDeclaration();
       
@@ -199,6 +200,9 @@ public class Parser {
       if (expr instanceof Expr.Variable) {
         Token name = ((Expr.Variable)expr).name;
         return new Expr.Assign(name, value);
+      } else if(expr instanceof Expr.Get) {
+        Expr.Get get = (Expr.Get)expr;
+        return new Expr.Set(get.object, get.name, value);
       }
 
       throw error(equals, "Invalid assignment target.");
@@ -327,6 +331,9 @@ public class Parser {
     while(true) {
       if(match(LEFT_PAREN)) {
         expr = finishCall(expr);
+      } else if(match(DOT)) {
+        Token name = consume (IDENTIFIER, "Expect property name after '.'");
+        expr = new Expr.Get(expr, name);
       } else {
         break;
       }
@@ -371,6 +378,8 @@ public class Parser {
       consume(RIGHT_PAREN, "Expect ')' after expression.");
       return new Expr.Grouping(expr);
     }
+    
+    if(match(THIS)) return new Expr.This(previous());
     
     if (match(IDENTIFIER)) {
       return new Expr.Variable(previous());
@@ -574,7 +583,7 @@ public class Parser {
      if(isAtEnd()) {}
      else if(match(SEMICOLON)){
        while(true){
-         if(!match(SEMICOLON)){
+         if(!match(SEMICOLON) || isAtEnd()){
            return;
          }
        }
@@ -588,7 +597,7 @@ public class Parser {
     * @param kind method or function
     * @return function statement
     */
-   private Stmt function(String kind) {
+   private Stmt.Function function(String kind) {
     Token name = consume(IDENTIFIER, "Expect " + kind + " name. ");
     
     consume(LEFT_PAREN, "Expect ( after " + kind + " name. ");
@@ -619,5 +628,18 @@ public class Parser {
     
     consumeStmtEnd("Expect ; after return value");
     return new Stmt.Return(keyword, value);
+  }
+  
+  private Stmt classDeclaration() {
+    Token name = consume(IDENTIFIER, "Expect class name. ");
+    consume(LEFT_BRACE, "Expect { after class name");
+    
+    List<Stmt.Function> methods = new ArrayList<>();
+    while(!check(RIGHT_BRACE) && !isAtEnd()) {
+      methods.add(function("method"));
+    }
+    
+    consume(RIGHT_BRACE, "expect } after class body");
+    return new Stmt.Class(name, methods);
   }
 }

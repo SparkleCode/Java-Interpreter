@@ -1,15 +1,16 @@
-// test file for interpreter
-
-fn makeCounter() {
-    var i = 0;
-    fn count() {
-        i = i + 1;
-        return i - 1;
+class Person {
+    init(name) {
+        this.name = name
     }
-    return count;
+    say() {
+        print this.name
+    }
 }
 
-var counter = makeCounter();
-for(var i = 0; i < 20; i = i + 1) {
-    print counter();
-}
+var me = Person("Me");
+me.say();
+
+var you = Person("You");
+you.say();
+you.name = "Your name";
+you.say()

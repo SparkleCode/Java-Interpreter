@@ -125,7 +125,7 @@ public class SparkleCode {
     // Stop if there was a resolution error.
     if (hadError) return;
     
-    System.out.println(new AstPrinter().print(statements));
+    //System.out.println(new AstPrinter().print(statements));
     INTERP.interpret(statements);
   }
   
