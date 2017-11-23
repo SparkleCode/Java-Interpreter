@@ -39,7 +39,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   private enum FunctionType {
     NONE,
     METHOD,
-    FUNCTION
+    FUNCTION,
+    INITIALIZER
   }
   
   private enum ClassType {
@@ -229,6 +230,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     
     stmt.methods.forEach((method) -> {
       FunctionType declaration = FunctionType.METHOD;
+      if(method.name.lexeme.equals("init")) {
+        declaration = FunctionType.INITIALIZER;
+      }
       resolveFunction(method, declaration);
     });
     
@@ -276,6 +280,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
       SparkleCode.error(stmt.keyword, "Cannot return from top-level code. ");
     }
     if (stmt.value != null) {
+      if(currentFunction == FunctionType.INITIALIZER) {
+        SparkleCode.error(stmt.keyword, "Cannot return value from initializer");
+      }
       resolve(stmt.value);
     }
 

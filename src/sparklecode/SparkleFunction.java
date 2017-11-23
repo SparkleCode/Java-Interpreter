@@ -32,10 +32,12 @@ import java.util.List;
 public class SparkleFunction implements SparkleCallable {
   private final Stmt.Function declaration;
   private final Environment closure;
+  private final boolean isInitializer;
 
-  public SparkleFunction(Stmt.Function declaration, Environment closure) {
+  public SparkleFunction(Stmt.Function declaration, Environment closure, boolean isInitializer) {
     this.declaration = declaration;
     this.closure = closure;
+    this.isInitializer = isInitializer;
   }
   
   
@@ -52,13 +54,16 @@ public class SparkleFunction implements SparkleCallable {
     } catch(Return r) {
       return r.value;
     }
+    
+    if(isInitializer) return closure.getAt(0, "this");
+    
     return null;
   }
   
   public SparkleFunction bind(SparkleInstance instance) {
     Environment environment = new Environment(closure);
     environment.define("this", instance);
-    return new SparkleFunction(declaration, environment);
+    return new SparkleFunction(declaration, environment, isInitializer);
   };
 
   @Override

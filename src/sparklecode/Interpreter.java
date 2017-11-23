@@ -477,7 +477,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
-    SparkleFunction fun = new SparkleFunction(stmt, env);
+    SparkleFunction fun = new SparkleFunction(stmt, env, false);
     env.define(stmt.name.lexeme, fun);
     return null;
   }
@@ -496,7 +496,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     
     Map<String, SparkleFunction> methods = new HashMap<>();
     stmt.methods.forEach((method) -> {
-      SparkleFunction function = new SparkleFunction(method, env);
+      SparkleFunction function = new SparkleFunction(method, env, method.name.lexeme.equals("init"));
       methods.put(method.name.lexeme, function);
     });
     
