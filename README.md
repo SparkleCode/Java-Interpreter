@@ -6,13 +6,9 @@ based on the Lox language http://www.craftinginterpreters.com/
 build using netbeans java project
 
 ## Improvements over tutorial
-  - block comments - you can have on inside another
+  - block comments - you can have one inside another
   - runtime error if uninitialised value is accessed
-
-## Todo
-  - not instead of !
-  - block statement only after if, while, etc.
-  - proper support for optional trailing semicolon (currently mandatory unless last token in file)
+  - tuples - expr, expr - currently only able to write and print, not access or create dynamically
 
 <!--
 # Features
