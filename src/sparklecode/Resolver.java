@@ -45,7 +45,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   
   private enum ClassType {
     NONE,
-    CLASS
+    CLASS,
+    SUBCLASS
   }
 
   private final Interpreter interpreter;
@@ -182,6 +183,20 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   }
   
   @Override
+  public Void visitSuperExpr(Expr.Super expr) {
+    if (currentClass == ClassType.NONE) {
+      SparkleCode.error(expr.keyword,
+          "Cannot use 'super' outside of a class.");
+    } else if (currentClass != ClassType.SUBCLASS) {
+      SparkleCode.error(expr.keyword,
+          "Cannot use 'super' in a class with no superclass.");
+    }
+    
+    resolveLocal(expr, expr.keyword);
+    return null;
+  }
+  
+  @Override
   public Void visitThisExpr(Expr.This expr) {
     if(currentClass == ClassType.NONE) {
       SparkleCode.error(expr.keyword, "Cannot use 'this' outside a method. ");
@@ -225,6 +240,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     ClassType enclosingClass = currentClass;
     currentClass = ClassType.CLASS;
     
+    if(stmt.superclass != null){
+      currentClass = ClassType.SUBCLASS;
+      resolve(stmt.superclass);
+      beginScope();
+      scopes.peek().put("super", true);
+    }
+    
     beginScope();
     scopes.peek().put("this", true);
     
@@ -236,6 +258,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
       resolveFunction(method, declaration);
     });
     
+    if(stmt.superclass != null) endScope();
     endScope();
     
     currentClass = enclosingClass;

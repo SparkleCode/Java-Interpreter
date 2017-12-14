@@ -1,16 +1,19 @@
-class Person {
+class Human {
+    feet(){
+        return 2
+    }
+}
+
+class Person < Human {
     init(name) {
         this.name = name
     }
     say() {
-        print this.name
+        print this.name + " has";
+        print super.feet();
+        print "feet"
     }
 }
 
-var me = Person("Me");
+var me = Person("John");
 me.say();
-
-var you = Person("You");
-you.say();
-you.name = "Your name";
-you.say()

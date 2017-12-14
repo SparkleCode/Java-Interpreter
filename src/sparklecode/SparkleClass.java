@@ -33,10 +33,12 @@ import java.util.Map;
 public class SparkleClass implements SparkleCallable {
   public final String name;
   public final Map<String, SparkleFunction> methods;
+  public final SparkleClass superclass;
 
-  public SparkleClass(String name, Map<String, SparkleFunction> methods) {
+  public SparkleClass(String name, SparkleClass superclass, Map<String, SparkleFunction> methods) {
     this.name = name;
     this.methods = methods;
+    this.superclass = superclass;
   }
   
   @Override
@@ -62,11 +64,13 @@ public class SparkleClass implements SparkleCallable {
     return init.arity();
   }
 
-  SparkleFunction findMethod(SparkleInstance instance, String name) {
+  public SparkleFunction findMethod(SparkleInstance instance, String name) {
     if(methods.containsKey(name)) {
       return methods.get(name).bind(instance);
     }
-    
+    if(superclass != null){
+      return superclass.findMethod(instance, name);
+    }
     return null;
   }
 }

@@ -494,13 +494,29 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Void visitClassStmt(Stmt.Class stmt) {
     env.define(stmt.name.lexeme, UNINITIALIZED);
     
+    Object superclass = null;
+    if(stmt.superclass != null){
+      superclass = evaluate(stmt.superclass);
+      if(!(superclass instanceof SparkleClass)){
+        throw new RuntimeError(stmt.name, "Superclass must be a class. ");
+      }
+      
+      env = new Environment(env);
+      env.define("super", superclass);
+    }
+    
     Map<String, SparkleFunction> methods = new HashMap<>();
     stmt.methods.forEach((method) -> {
       SparkleFunction function = new SparkleFunction(method, env, method.name.lexeme.equals("init"));
       methods.put(method.name.lexeme, function);
     });
     
-    SparkleClass klass = new SparkleClass(stmt.name.lexeme, methods);
+    SparkleClass klass = new SparkleClass(stmt.name.lexeme,
+            (SparkleClass)superclass, methods);
+    
+    if(superclass != null) {
+      env = env.enclosing;
+    }
     env.assign(stmt.name, klass);
     return null;
   }
@@ -531,5 +547,22 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Object visitThisExpr(Expr.This expr) {
     return lookupVariable(expr.keyword, expr);
+  }
+
+  @Override
+  public Object visitSuperExpr(Expr.Super expr) {
+    int distance = locals.get(expr);
+    SparkleClass superclass = (SparkleClass)env.getAt(distance, "super");
+    
+    SparkleInstance obj = (SparkleInstance)env.getAt(distance - 1, "this");
+    
+    SparkleFunction method = superclass.findMethod(obj, expr.method.lexeme);
+    
+    if (method == null) {
+      throw new RuntimeError(expr.method,
+          "Undefined property '" + expr.method.lexeme + "'.");
+    }
+    
+    return method;
   }
 }

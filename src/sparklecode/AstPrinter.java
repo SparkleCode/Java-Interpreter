@@ -298,21 +298,37 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
   @Override
   public String visitClassStmt(Stmt.Class stmt) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    StringBuilder builder = new StringBuilder();
+    builder.append("(class ").append(stmt.name.lexeme);
+    
+    if (stmt.superclass != null) {
+      builder.append(" < ").append(print(stmt.superclass));
+    }
+    stmt.methods.forEach((method) -> {
+      builder.append(" ").append(print(method));
+    });
+
+    builder.append(")");
+    return builder.toString();
   }
 
   @Override
   public String visitGetExpr(Expr.Get expr) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return parenthesize2("get", expr.object, expr.name);
   }
 
   @Override
   public String visitSetExpr(Expr.Set expr) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+   return parenthesize2("set", expr.object, expr.name, "=", expr.value);
   }
 
   @Override
   public String visitThisExpr(Expr.This expr) {
     return "this";
+  }
+
+  @Override
+  public String visitSuperExpr(Expr.Super expr) {
+    return parenthesize2("super", expr.method);
   }
 }

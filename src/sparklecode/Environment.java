@@ -36,7 +36,7 @@ public class Environment {
   /**
    * Parent environment
    */
-  private final Environment enclosing;
+  public final Environment enclosing;
   
   /**
    * Map of value names and values
